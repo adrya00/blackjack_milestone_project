@@ -1,32 +1,36 @@
+
+### IMPORTS AND GLOBAL VARIABLES ###
 import random
 
 suits = ('Hearts', 'Diamonds', 'Spades', 'Clubs')
-ranks = ('Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten','Jack', 'Queen', 'King', 'Ace')
-values = {'Two':2, 'Three':3, 'Four':4, 'Five':5, 'Six':6, 'Seven':7, 'Eight':8, 
-          'Nine':9, 'Ten':10, 'Jack':10, 'Queen':10, 'King':10,'Ace':11}
+ranks = ('Two', 'Three', 'Four', 'Five', 'Six', 'Seven',
+         'Eight', 'Nine', 'Ten', 'Jack', 'Queen', 'King', 'Ace')
+values = {'Two': 2, 'Three': 3, 'Four': 4, 'Five': 5, 'Six': 6, 'Seven': 7, 'Eight': 8,
+          'Nine': 9, 'Ten': 10, 'Jack': 10, 'Queen': 10, 'King': 10, 'Ace': 11}
 
 playing = True
-
-
+next
+### CLASS DEFINITIONS ###
+# Card Class where each card object has a suit, rank and value
 class Card():
     def __init__(self, suit, rank):
         self.suit = suit
         self.rank = rank
         self.value = values[rank]
-        
+
     def __str__(self):
         return self.rank + " of " + self.suit
 
-
+# Deck Class to store 52 card objects that can be shuffled
 class Deck():
-    
-    def __init__(self):        
-        self.deck = [] # start with an empty list        
+
+    def __init__(self):
+        self.deck = []  # start with an empty list
         for suit in suits:
             for rank in ranks:
-                # CREATE THE CARD OBJECT
+                # create the card object
                 created_card = Card(suit, rank)
-                
+
                 self.deck.append(created_card)
 
     def __str__(self):
@@ -35,40 +39,40 @@ class Deck():
             deck_comp += '\n' + card_object.__str__()
         return 'The deck has: ' + deck_comp
 
-    def shuffle(self):        
+    def shuffle(self):
         random.shuffle(self.deck)
-        
+
     def deal(self):
         return self.deck.pop()
 
-
+# Hand Class, to hold the card objects dealt from the Deck. Also used to calculate the value of the cards using dictionary defined above
 class Hand():
     def __init__(self):
-        self.cards = [] # starts with an empty list
-        self.value = 0 # start with zero value
-        self.aces = 0 # add an attribute to keep track of aces
+        self.cards = []  # starts with an empty list
+        self.value = 0  # start with zero value
+        self.aces = 0  # add an attribute to keep track of aces
 
-    def add_card(self,card):
+    def add_card(self, card):
         # card passed in from Deck.deal() --> single Card(suit, rank)
         self.cards.append(card)
         self.value += values[card.rank]
 
         # track our aces
-        if card.rank =="Ace":
+        if card.rank == "Ace":
             self.aces += 1
-    
+
     def adjust_for_ace(self):
-        # IF TOTAL VALUE > 21 AND I STILL HAVE AN ACE
-        # THAN CHANGE MY ACE TO BE A 1 INSTEAD OF AN 11
+        # If total value is > 21 and i still have an ace
+        # than change my Ace to be a 1 instead of an 11
         while self.value > 21 and self.aces:
             self.value -= 10
             self.aces -= 1
-        
 
+# Chips Class to keep track of player's starting chips, bets, and ongoing winnings
 class Chips:
 
     def __init__(self):
-        self.total = 100 
+        self.total = 100
         self.bet = 0
 
     def win_bet(self):
@@ -76,3 +80,74 @@ class Chips:
 
     def lose_bet(self):
         self.total -= self.bet
+
+
+### FUNCTION DEFINTIONS ###
+# 
+def take_bet(chips):
+
+    while True:
+        try:
+            chips.bet = int(input("How many chips would you like to bet? "))
+        except:
+            print("Sorry please provide an integer")
+        else:
+            if chips.bet > chips.total:
+                print('Sorry, you do not have enough chips! You have: {}'.format(chips.total))
+            else:
+                break
+
+
+def hit(deck, hand):
+
+    single_card = deck.deal()
+    hand.add_card(single_card)
+    hand.adjust_for_ace()
+
+def hit_or_stand(deck, hand):
+    global playing
+
+    while True:
+        x = input('Hit of Stand? Enter h or s: ')
+
+        if x[0].lower() == 'h':
+            hit(deck, hand)
+        elif x[0].lower() == 's':
+            print("Player Stands. Dealer's Turn")
+            playing = False
+        else:
+            print('Sorry, I did not understand that, Please enter h or s only.')
+            continue
+
+        break
+
+def show_some(player, dealer):
+    print("\nDealer's Hand: ")
+    print('<card hidden>')
+    print('',dealer.cards[1])
+    print("\nPlayer's Hand:" , *player.cards, sep='\n')
+
+def show_all(player, dealer):
+    print("\nDealer's Hand:", *dealer.cards, sep='\n')
+    print("Dealer's Hand=", dealer.value)
+    print("\nPlayer's Hand:", *player.cards, sep='\n')
+    print("Player's Hand=", player.value)
+
+def player_busts(player, dealer, chips):
+    print("Bust Player!")
+    chips.lose_bet()
+
+def player_wins(player, dealer, chips):
+    print("Player Wins!")
+    chips.win_bet()
+
+def dealer_busts(player, dealer, chips):
+    print('Player Wins! Dealer Busted!')
+    chips.win_bet()
+    
+def dealer_wins(player, dealer, chips):
+    print('Dealer Wins!')
+    chips.lose_bet()
+
+def push(player, dealer):
+    print('Dealer and Player tie! Push')

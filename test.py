@@ -5,6 +5,7 @@ new_deck.shuffle()
 
 # Player
 test_player = setup.Hand()
+
 #Deal 1 car from deck Card(suit,rank)
 pulled_card = new_deck.deal()
 print(pulled_card)
